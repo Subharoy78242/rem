@@ -1,9 +1,19 @@
 const express = require('express');
 const app = express();
 
+app.set('trust proxy', true); // Enable proxy trust
+
 app.get('/', (req, res) => {
-  const clientIpAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  res.send(`The client IP address Subha is: ${clientIpAddress}`);
+  const forwardedFor = req.headers['x-forwarded-for'];
+
+  // If the forwardedFor header is present and contains a comma
+  if (forwardedFor && forwardedFor.includes(',')) {
+    const clientIpAddress = forwardedFor.split(',')[0].trim();
+    res.send(`The client IP address is: ${clientIpAddress}`);
+  } else {
+    const clientIpAddress = forwardedFor || req.connection.remoteAddress;
+    res.send(`The client IP address is: ${clientIpAddress}`);
+  }
 });
 
 const port = process.env.PORT || 3000;
